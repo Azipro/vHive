@@ -28,6 +28,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"sync"
@@ -109,7 +110,7 @@ func main() {
 }
 
 func readEndpoints(path string) (endpoints []*endpoint.Endpoint, _ error) {
-	data, err := os.ReadFile(path)
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +171,7 @@ func SayHello(address, workflowID string) {
 	ctx, cancel := context.WithTimeout(context.Background(), grpcTimeout)
 	defer cancel()
 
-	_, err = c.SayHello(ctx, &HelloRequest{
+	res, err := c.SayHello(ctx, &HelloRequest{
 		Name: "faas",
 		VHiveMetadata: vhivemetadata.MakeVHiveMetadata(
 			workflowID,
@@ -183,6 +184,7 @@ func SayHello(address, workflowID string) {
 	} else {
 		atomic.AddInt64(&completed, 1)
 	}
+	fmt.Println(res.Message)
 }
 
 func invokeEventingFunction(endpoint *endpoint.Endpoint) {
